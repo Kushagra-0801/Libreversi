@@ -35,8 +35,21 @@ mod tests {
 
     #[test]
     fn test_getters() {
-        let pos: Position = (3, 6).into();
-        assert_eq!(pos.col(), 6);
+        let pos: Position = Position { idx: 3 * 8 + 6 };
         assert_eq!(pos.row(), 3);
+        assert_eq!(pos.col(), 6);
+    }
+
+    #[test]
+    fn test_from_impl() {
+        let pos: Position = (5, 7).into();
+        assert_eq!(pos.row(), 5);
+        assert_eq!(pos.col(), 6);
+    }
+
+    #[should_panic(expected = "Index out of bounds")]
+    #[test]
+    fn test_from_impl_out_of_bounds() {
+        let _pos: Position = (9, 20).into();
     }
 }
