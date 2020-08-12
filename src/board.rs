@@ -8,7 +8,7 @@ pub enum Disc {
     Player2 = 2,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board {
     p1: [u8; 8],
     p2: [u8; 8],
@@ -47,7 +47,30 @@ impl Default for Board {
     }
 }
 
+impl From<[[Disc; 8]; 8]> for Board {
+    fn from(b: [[Disc; 8]; 8]) -> Self {
+        let mut board = Board::empty();
+        for i in 0..8 {
+            for j in 0..8 {
+                match b[i][j] {
+                    Disc::Player1 => board.p1[i] |= 1 << j,
+                    Disc::Player2 => board.p2[i] |= 1 << j,
+                    Disc::Empty => (),
+                }
+            }
+        }
+        board
+    }
+}
+
 impl Board {
+    pub fn empty() -> Self {
+        Self {
+            p1: [0; 8],
+            p2: [0; 8],
+        }
+    }
+
     pub fn iter(&self) -> Iter {
         Iter {
             board: self,
@@ -94,5 +117,30 @@ mod tests {
         assert_eq!(board[(4, 3).into()], Disc::Player1);
         assert_eq!(board[(4, 4).into()], Disc::Player2);
         assert_eq!(board[(7, 7).into()], Disc::Empty);
+    }
+
+    #[test]
+    fn test_from_disc_array_array_empty() {
+        use Disc::Empty;
+        let init_board = [[Empty; 8]; 8];
+        let new_board = Board::from(init_board);
+        assert_eq!(new_board, Board::empty());
+    }
+
+    #[test]
+    fn test_from_disc_array_array() {
+        use Disc::*;
+        let init_board = [
+            [Empty; 8],
+            [Empty; 8],
+            [Empty; 8],
+            [Empty, Empty, Empty, Player2, Player1, Empty, Empty, Empty],
+            [Empty, Empty, Empty, Player1, Player2, Empty, Empty, Empty],
+            [Empty; 8],
+            [Empty; 8],
+            [Empty; 8],
+        ];
+        let new_board = Board::from(init_board);
+        assert_eq!(new_board, Board::default());
     }
 }
