@@ -2,7 +2,10 @@ use crate::position::{Position, MAX_VALID_POS};
 use std::ops::Index;
 
 mod neighbours;
+mod strider;
+
 use neighbours::Neighbours;
+use strider::{Direction, Strider};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Disc {
@@ -136,6 +139,31 @@ impl Board {
             (7, _) => Neighbours::bottom_edge(self, pos),
             (_, 0) => Neighbours::left_edge(self, pos),
             (_, _) => Neighbours::inner_point(self, pos),
+        }
+    }
+
+    pub fn get_points_in_line<T: Into<Position>, U: Into<Position>>(
+        &self,
+        pos: T,
+        neighbour_pos: U,
+    ) -> Strider {
+        let pos = pos.into();
+        let neighbour_pos = neighbour_pos.into();
+        let dir = match pos.idx as i8 - neighbour_pos.idx as i8 {
+            8 => Direction::Up,
+            7 => Direction::UpRight,
+            -1 => Direction::Right,
+            -9 => Direction::DownRight,
+            -8 => Direction::Down,
+            -7 => Direction::DownLeft,
+            1 => Direction::Left,
+            9 => Direction::UpLeft,
+            _ => unreachable!(),
+        };
+        Strider {
+            board: self,
+            pos,
+            dir,
         }
     }
 }
@@ -289,6 +317,43 @@ mod tests {
         assert!(matches!(
             board.neighbours((4u8, 6u8)),
             Neighbours::InnerPoint(_)
+        ));
+    }
+
+    #[test]
+    fn test_striders() {
+        let board = Board::default();
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (2u8, 4u8)),
+            Strider {dir: Direction::Up, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (2u8, 5u8)),
+            Strider {dir: Direction::UpRight, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (3u8, 5u8)),
+            Strider {dir: Direction::Right, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (4u8, 5u8)),
+            Strider {dir: Direction::DownRight, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (4u8, 4u8)),
+            Strider {dir: Direction::Down, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (4u8, 3u8)),
+            Strider {dir: Direction::DownLeft, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (3u8, 3u8)),
+            Strider {dir: Direction::Left, ..}
+        ));
+        assert!(matches!(
+            board.get_points_in_line((3u8, 4u8), (2u8, 3u8)),
+            Strider {dir: Direction::UpLeft, ..}
         ));
     }
 }
