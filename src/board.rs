@@ -1,6 +1,9 @@
 use crate::position::{Position, MAX_VALID_POS};
 use std::ops::Index;
 
+mod neighbours;
+use neighbours::Neighbours;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Disc {
     Empty = 0,
@@ -118,6 +121,23 @@ impl Board {
             }
         }
     }
+
+    pub fn neighbours<T: Into<Position>>(&self, pos: T) -> Neighbours {
+        let pos = pos.into();
+        let row = pos.row();
+        let col = pos.col();
+        match (row, col) {
+            (0, 0) => Neighbours::top_left_corner(self),
+            (0, 7) => Neighbours::top_right_corner(self),
+            (7, 0) => Neighbours::bottom_left_corner(self),
+            (7, 7) => Neighbours::bottom_right_corner(self),
+            (0, _) => Neighbours::top_edge(self, pos),
+            (_, 7) => Neighbours::right_edge(self, pos),
+            (7, _) => Neighbours::bottom_edge(self, pos),
+            (_, 0) => Neighbours::left_edge(self, pos),
+            (_, _) => Neighbours::inner_point(self, pos),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -229,5 +249,46 @@ mod tests {
         board.set_piece((3u8, 3u8), Disc::Player1);
         assert_eq!(board[(3u8, 3u8)], Disc::Player1);
         assert_eq!(board.get_piece((3u8, 3u8)), Disc::Player1);
+    }
+
+    #[test]
+    fn test_neighbours() {
+        let board = Board::default();
+        assert!(matches!(
+            board.neighbours((0u8, 0u8)),
+            Neighbours::TopLeftCorner(_)
+        ));
+        assert!(matches!(
+            board.neighbours((0u8, 7u8)),
+            Neighbours::TopRightCorner(_)
+        ));
+        assert!(matches!(
+            board.neighbours((7u8, 0u8)),
+            Neighbours::BottomLeftCorner(_)
+        ));
+        assert!(matches!(
+            board.neighbours((7u8, 7u8)),
+            Neighbours::BottomRightCorner(_)
+        ));
+        assert!(matches!(
+            board.neighbours((0u8, 5u8)),
+            Neighbours::TopEdge(_)
+        ));
+        assert!(matches!(
+            board.neighbours((4u8, 7u8)),
+            Neighbours::RightEdge(_)
+        ));
+        assert!(matches!(
+            board.neighbours((7u8, 5u8)),
+            Neighbours::BottomEdge(_)
+        ));
+        assert!(matches!(
+            board.neighbours((5u8, 0u8)),
+            Neighbours::LeftEdge(_)
+        ));
+        assert!(matches!(
+            board.neighbours((4u8, 6u8)),
+            Neighbours::InnerPoint(_)
+        ));
     }
 }
