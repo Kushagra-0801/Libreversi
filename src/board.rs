@@ -93,6 +93,25 @@ impl Board {
             cur_pos: (0, 0).into(),
         }
     }
+
+    pub fn set_piece(&mut self, pos: Position, val: Disc) {
+        let row = pos.row();
+        let col = pos.col();
+        match val {
+            Disc::Empty => {
+                self.p1[row] &= !(1 << col);
+                self.p2[row] &= !(1 << col);
+            }
+            Disc::Player1 => {
+                self.p1[row] |= 1 << col;
+                self.p2[row] &= !(1 << col);
+            }
+            Disc::Player2 => {
+                self.p1[row] &= !(1 << col);
+                self.p2[row] |= 1 << col;
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -189,5 +208,16 @@ mod tests {
         let board = Board::empty();
         assert_eq!(board.iter().count(), 64);
         println!("{:?}", board.iter().size_hint());
+    }
+
+    #[test]
+    fn test_value_setter() {
+        let mut board = Board::default();
+        assert_eq!(board[(0, 3).into()], Disc::Empty);
+        board.set_piece((0, 3).into(), Disc::Player1);
+        assert_eq!(board[(0, 3).into()], Disc::Player1);
+        assert_eq!(board[(3, 3).into()], Disc::Player2);
+        board.set_piece((3, 3).into(), Disc::Player1);
+        assert_eq!(board[(3, 3).into()], Disc::Player1);
     }
 }
