@@ -63,6 +63,22 @@ impl From<[[Disc; 8]; 8]> for Board {
     }
 }
 
+impl From<[Disc; 64]> for Board {
+    fn from(b: [Disc; 64]) -> Self {
+        let mut board = Board::empty();
+        for i in 0..8 {
+            for j in 0..8 {
+                match b[i * 8 + j] {
+                    Disc::Player1 => board.p1[i] |= 1 << j,
+                    Disc::Player2 => board.p2[i] |= 1 << j,
+                    Disc::Empty => (),
+                }
+            }
+        }
+        board
+    }
+}
+
 impl Board {
     pub fn empty() -> Self {
         Self {
@@ -140,6 +156,26 @@ mod tests {
             [Empty; 8],
             [Empty; 8],
         ];
+        let new_board = Board::from(init_board);
+        assert_eq!(new_board, Board::default());
+    }
+
+    #[test]
+    fn test_from_disc_array_empty() {
+        use Disc::Empty;
+        let init_board = [Empty; 64];
+        let new_board = Board::from(init_board);
+        assert_eq!(new_board, Board::empty());
+    }
+
+    #[test]
+    fn test_from_disc_array() {
+        use Disc::*;
+        let mut init_board = [Empty; 64];
+        init_board[27] = Player2;
+        init_board[28] = Player1;
+        init_board[35] = Player1;
+        init_board[36] = Player2;
         let new_board = Board::from(init_board);
         assert_eq!(new_board, Board::default());
     }
