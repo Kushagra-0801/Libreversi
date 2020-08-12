@@ -84,7 +84,7 @@ impl From<[Disc; 64]> for Board {
 }
 
 impl Board {
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self {
             p1: [0; 8],
             p2: [0; 8],
