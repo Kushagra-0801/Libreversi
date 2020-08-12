@@ -111,6 +111,10 @@ impl<'a> Iterator for Iter<'a> {
         self.cur_pos.idx += 1;
         Some(this_one)
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (64, Some(64))
+    }
 }
 
 #[cfg(test)]
@@ -178,5 +182,12 @@ mod tests {
         init_board[36] = Player2;
         let new_board = Board::from(init_board);
         assert_eq!(new_board, Board::default());
+    }
+
+    #[test]
+    fn test_board_iterator() {
+        let board = Board::empty();
+        assert_eq!(board.iter().count(), 64);
+        println!("{:?}", board.iter().size_hint());
     }
 }
