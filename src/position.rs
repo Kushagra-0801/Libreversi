@@ -29,6 +29,16 @@ impl From<(u8, u8)> for Position {
     }
 }
 
+impl From<(usize, usize)> for Position {
+    fn from(p: (usize, usize)) -> Self {
+        if p.0 > 7 || p.1 > 7 {
+            panic!("Index out of bounds")
+        }
+        let p = (p.0 as u8, p.1 as u8);
+        p.into()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -42,7 +52,10 @@ mod tests {
 
     #[test]
     fn test_from_impl() {
-        let pos: Position = (5, 7).into();
+        let pos: Position = (5u8, 7u8).into();
+        assert_eq!(pos.row(), 5);
+        assert_eq!(pos.col(), 6);
+        let pos: Position = (5usize, 7usize).into();
         assert_eq!(pos.row(), 5);
         assert_eq!(pos.col(), 6);
     }
@@ -50,6 +63,7 @@ mod tests {
     #[should_panic(expected = "Index out of bounds")]
     #[test]
     fn test_from_impl_out_of_bounds() {
-        let _pos: Position = (9, 20).into();
+        let _pos: Position = (9u8, 20u8).into();
+        let _pos: Position = (9usize, 20usize).into();
     }
 }
