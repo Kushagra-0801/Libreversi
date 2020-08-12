@@ -73,3 +73,26 @@ impl<'a> Iterator for Iter<'a> {
         Some(this_one)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_impl() {
+        let board = Board::default();
+        assert_eq!(board.p1, [0, 0, 0, 16, 8, 0, 0, 0]);
+        assert_eq!(board.p2, [0, 0, 0, 8, 16, 0, 0, 0]);
+    }
+
+    #[test]
+    fn test_indexing() {
+        let board = Board::default();
+        assert_eq!(board[(0, 5).into()], Disc::Empty);
+        assert_eq!(board[(3, 3).into()], Disc::Player2);
+        assert_eq!(board[(3, 4).into()], Disc::Player1);
+        assert_eq!(board[(4, 3).into()], Disc::Player1);
+        assert_eq!(board[(4, 4).into()], Disc::Player2);
+        assert_eq!(board[(7, 7).into()], Disc::Empty);
+    }
+}
