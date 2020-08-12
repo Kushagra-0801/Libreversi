@@ -1,6 +1,6 @@
 pub(crate) const MAX_VALID_POS: u8 = 0b00111111; // (7, 7)
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Position {
     /// Use a single bit for indexing
     ///
