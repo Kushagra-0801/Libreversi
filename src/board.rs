@@ -14,9 +14,10 @@ pub struct Board {
     p2: [u8; 8],
 }
 
-impl Index<Position> for Board {
+impl<T: Into<Position>> Index<T> for Board {
     type Output = Disc;
-    fn index(&self, index: Position) -> &Self::Output {
+    fn index(&self, index: T) -> &Self::Output {
+        let index = index.into();
         if index.idx > MAX_VALID_POS {
             panic!("Index out of bounds")
         }
@@ -94,7 +95,12 @@ impl Board {
         }
     }
 
-    pub fn set_piece(&mut self, pos: Position, val: Disc) {
+    pub fn get_piece<T: Into<Position>>(&self, pos: T) -> Disc {
+        self[pos.into()]
+    }
+
+    pub fn set_piece<T: Into<Position>>(&mut self, pos: T, val: Disc) {
+        let pos = pos.into();
         let row = pos.row();
         let col = pos.col();
         match val {
@@ -150,12 +156,12 @@ mod tests {
     #[test]
     fn test_indexing() {
         let board = Board::default();
-        assert_eq!(board[(0, 5).into()], Disc::Empty);
-        assert_eq!(board[(3, 3).into()], Disc::Player2);
-        assert_eq!(board[(3, 4).into()], Disc::Player1);
-        assert_eq!(board[(4, 3).into()], Disc::Player1);
-        assert_eq!(board[(4, 4).into()], Disc::Player2);
-        assert_eq!(board[(7, 7).into()], Disc::Empty);
+        assert_eq!(board[(0, 5)], Disc::Empty);
+        assert_eq!(board[(3, 3)], Disc::Player2);
+        assert_eq!(board[(3, 4)], Disc::Player1);
+        assert_eq!(board[(4, 3)], Disc::Player1);
+        assert_eq!(board[(4, 4)], Disc::Player2);
+        assert_eq!(board[(7, 7)], Disc::Empty);
     }
 
     #[test]
@@ -211,13 +217,17 @@ mod tests {
     }
 
     #[test]
-    fn test_value_setter() {
+    fn test_value_getter_setter() {
         let mut board = Board::default();
-        assert_eq!(board[(0, 3).into()], Disc::Empty);
-        board.set_piece((0, 3).into(), Disc::Player1);
-        assert_eq!(board[(0, 3).into()], Disc::Player1);
-        assert_eq!(board[(3, 3).into()], Disc::Player2);
-        board.set_piece((3, 3).into(), Disc::Player1);
-        assert_eq!(board[(3, 3).into()], Disc::Player1);
+        assert_eq!(board[(0, 3)], Disc::Empty);
+        assert_eq!(board.get_piece((0, 3)), Disc::Empty);
+        board.set_piece((0, 3), Disc::Player1);
+        assert_eq!(board[(0, 3)], Disc::Player1);
+        assert_eq!(board.get_piece((0, 3)), Disc::Player1);
+        assert_eq!(board[(3, 3)], Disc::Player2);
+        assert_eq!(board.get_piece((3, 3)), Disc::Player2);
+        board.set_piece((3, 3), Disc::Player1);
+        assert_eq!(board[(3, 3)], Disc::Player1);
+        assert_eq!(board.get_piece((3, 3)), Disc::Player1);
     }
 }
