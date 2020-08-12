@@ -1,7 +1,7 @@
 use crate::position::{Position, MAX_VALID_POS};
 use std::ops::Index;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Disc {
     Empty = 0,
     Player1 = 1,
