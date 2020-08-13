@@ -120,6 +120,14 @@ impl Board {
         }
     }
 
+    pub fn player1_count(&self) -> usize {
+        self.p1.iter().fold(0, |acc, &row| acc + row.count_ones()) as usize
+    }
+
+    pub fn player2_count(&self) -> usize {
+        self.p2.iter().fold(0, |acc, &row| acc + row.count_ones()) as usize
+    }
+
     pub fn neighbours<T: Into<Position>>(&self, pos: T) -> Neighbours {
         let pos = pos.into();
         let row = pos.row();

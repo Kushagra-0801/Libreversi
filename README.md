@@ -5,5 +5,6 @@ Reversi in any language.
 
 ## Features
 
-- [ ] List of Legal moves
+- [x] List of Legal moves
+- [x] Piece placement and list of pieces that were turned
 - [ ] AI Enemy using [MiniMax Algorithm](https://en.wikipedia.org/wiki/Minimax)
