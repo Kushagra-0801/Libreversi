@@ -196,8 +196,8 @@ impl Board {
         if self[pos] != Disc::Empty {
             return false;
         }
-        let opponent = player.opponent().into();
-        let player = player.into();
+        let opponent = player.opponent();
+        let player = player;
         for (neighbour_pos, neighbour_disc) in self.neighbours(pos) {
             if neighbour_disc == opponent {
                 for (_, disc) in self.get_points_in_line(pos, neighbour_pos) {
