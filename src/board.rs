@@ -194,6 +194,16 @@ impl Board {
 
     pub fn place_piece<T: Into<Position>>(&mut self, pos: T, player: Player) -> Vec<Position> {
         let pos = pos.into();
+        let turned_pieces = self.place_piece_dry_run(pos, player);
+        self.set_piece(pos, player.clone().into());
+        turned_pieces
+            .iter()
+            .for_each(|&pos| self.set_piece(pos, player.into()));
+        turned_pieces
+    }
+
+    pub fn place_piece_dry_run<T: Into<Position>>(&self, pos: T, player: Player) -> Vec<Position> {
+        let pos = pos.into();
         let mut turned_pieces = vec![];
         let opponent = player.opponent();
         for (neighbour_pos, neighbour_piece) in self.neighbours(pos) {
@@ -215,10 +225,6 @@ impl Board {
                 }
             }
         }
-        self.set_piece(pos, player.clone().into());
-        turned_pieces
-            .iter()
-            .for_each(|&pos| self.set_piece(pos, player.into()));
         turned_pieces
     }
 }
@@ -451,8 +457,10 @@ mod tests {
         let mut board = Board::default();
         let player1 = Player::Player1;
         assert_eq!(board[(3u8, 3u8)], Disc::Player2);
+        assert_eq!(board[(2u8, 3u8)], Disc::Empty);
         let turned = board.place_piece((2u8, 3u8), player1);
         assert_eq!(turned, vec![(3u8, 3u8).into()]);
         assert_eq!(board[(3u8, 3u8)], Disc::Player1);
+        assert_eq!(board[(2u8, 3u8)], Disc::Player1);
     }
 }
