@@ -166,11 +166,11 @@ impl Board {
         }
     }
 
-    pub fn get_points_in_line<T: Into<Position>, U: Into<Position>>(
-        &self,
-        pos: T,
-        neighbour_pos: U,
-    ) -> Strider {
+    pub fn get_points_in_line<T, U>(&self, pos: T, neighbour_pos: U) -> Strider
+    where
+        T: Into<Position>,
+        U: Into<Position>,
+    {
         let pos = pos.into();
         let neighbour_pos = neighbour_pos.into();
         let dir = match pos.idx as i8 - neighbour_pos.idx as i8 {
