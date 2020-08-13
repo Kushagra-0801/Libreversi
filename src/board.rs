@@ -9,9 +9,33 @@ use strider::{Direction, Strider};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Disc {
-    Empty = 0,
-    Player1 = 1,
-    Player2 = 2,
+    Empty,
+    Player1,
+    Player2,
+}
+
+impl From<Player> for Disc {
+    fn from(p: Player) -> Self {
+        match p {
+            Player::Player1 => Disc::Player1,
+            Player::Player2 => Disc::Player2,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum Player {
+    Player1,
+    Player2,
+}
+
+impl Player {
+    fn opponent(&self) -> Self {
+        match self {
+            Player::Player1 => Player::Player2,
+            Player::Player2 => Player::Player1,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -165,6 +189,29 @@ impl Board {
             pos,
             dir,
         }
+    }
+
+    pub fn is_legal_move<T: Into<Position>>(&self, pos: T, player: Player) -> bool {
+        let pos = pos.into();
+        if self[pos] != Disc::Empty {
+            return false;
+        }
+        let opponent = player.opponent().into();
+        let player = player.into();
+        for (neighbour_pos, neighbour_disc) in self.neighbours(pos) {
+            if neighbour_disc == opponent {
+                for (_, disc) in self.get_points_in_line(pos, neighbour_pos) {
+                    match disc {
+                        // All cases are covered as opponent and player are different player discs
+                        Disc::Empty => break,
+                        x if x == opponent => continue,
+                        x if x == player => return true,
+                        _ => unreachable!(),
+                    }
+                }
+            }
+        }
+        false
     }
 }
 
@@ -355,5 +402,18 @@ mod tests {
             board.get_points_in_line((3u8, 4u8), (2u8, 3u8)),
             Strider {dir: Direction::UpLeft, ..}
         ));
+    }
+
+    #[test]
+    fn test_legal_moves() {
+        let board = Board::default();
+        let player1 = Player::Player1;
+        let player2 = Player::Player2;
+        assert!(board.is_legal_move((2u8, 3u8), player1));
+        assert!(!board.is_legal_move((2u8, 3u8), player2));
+        assert!(board.is_legal_move((2u8, 4u8), player2));
+        assert!(!board.is_legal_move((2u8, 4u8), player1));
+        assert!(!board.is_legal_move((3u8, 4u8), player1));
+        assert!(!board.is_legal_move((3u8, 4u8), player2));
     }
 }
