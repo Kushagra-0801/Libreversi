@@ -213,6 +213,13 @@ impl Board {
         }
         false
     }
+
+    pub fn all_legal_moves<'a>(&'a self, player: Player) -> impl Iterator<Item = Position> + 'a {
+        (0..8u8)
+            .flat_map(|i| (0..8u8).map(move |j| (i, j)))
+            .filter(move |&pos| self.is_legal_move(pos, player))
+            .map(|p| p.into())
+    }
 }
 
 #[derive(Debug)]
@@ -415,5 +422,26 @@ mod tests {
         assert!(!board.is_legal_move((2u8, 4u8), player1));
         assert!(!board.is_legal_move((3u8, 4u8), player1));
         assert!(!board.is_legal_move((3u8, 4u8), player2));
+    }
+
+    #[test]
+    fn test_legal_moves_iterator() {
+        let board = Board::default();
+        let player1 = Player::Player1;
+        let player2 = Player::Player2;
+        let mut moves_for_player1 = board.all_legal_moves(player1);
+        let mut moves_for_player2 = board.all_legal_moves(player2);
+
+        assert_eq!(moves_for_player1.next(), Some((2u8, 3u8).into()));
+        assert_eq!(moves_for_player1.next(), Some((3u8, 2u8).into()));
+        assert_eq!(moves_for_player1.next(), Some((4u8, 5u8).into()));
+        assert_eq!(moves_for_player1.next(), Some((5u8, 4u8).into()));
+        assert_eq!(moves_for_player1.next(), None);
+
+        assert_eq!(moves_for_player2.next(), Some((2u8, 4u8).into()));
+        assert_eq!(moves_for_player2.next(), Some((3u8, 5u8).into()));
+        assert_eq!(moves_for_player2.next(), Some((4u8, 2u8).into()));
+        assert_eq!(moves_for_player2.next(), Some((5u8, 3u8).into()));
+        assert_eq!(moves_for_player2.next(), None);
     }
 }
