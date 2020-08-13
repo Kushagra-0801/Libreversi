@@ -1,42 +1,13 @@
 use crate::position::{Position, MAX_VALID_POS};
 use std::ops::Index;
 
+mod discs;
 mod neighbours;
 mod strider;
 
+use discs::{Disc, Player};
 use neighbours::Neighbours;
 use strider::{Direction, Strider};
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum Disc {
-    Empty,
-    Player1,
-    Player2,
-}
-
-impl From<Player> for Disc {
-    fn from(p: Player) -> Self {
-        match p {
-            Player::Player1 => Disc::Player1,
-            Player::Player2 => Disc::Player2,
-        }
-    }
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum Player {
-    Player1,
-    Player2,
-}
-
-impl Player {
-    fn opponent(&self) -> Self {
-        match self {
-            Player::Player1 => Player::Player2,
-            Player::Player2 => Player::Player1,
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board {
@@ -219,6 +190,36 @@ impl Board {
             .flat_map(|i| (0..8u8).map(move |j| (i, j)))
             .filter(move |&pos| self.is_legal_move(pos, player))
             .map(|p| p.into())
+    }
+
+    pub fn place_piece<T: Into<Position>>(&mut self, pos: T, player: Player) -> Vec<Position> {
+        let pos = pos.into();
+        let mut turned_pieces = vec![];
+        let opponent = player.opponent();
+        for (neighbour_pos, neighbour_piece) in self.neighbours(pos) {
+            if neighbour_piece == opponent {
+                for (_, disc) in self.get_points_in_line(pos, neighbour_pos) {
+                    match disc {
+                        Disc::Empty => break,
+                        x if x == opponent => continue,
+                        x if x == player => {
+                            turned_pieces.extend(
+                                self.get_points_in_line(pos, neighbour_pos)
+                                    .take_while(|&(_, d)| d != player)
+                                    .map(|(p, _)| p),
+                            );
+                            break;
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+            }
+        }
+        self.set_piece(pos, player.clone().into());
+        turned_pieces
+            .iter()
+            .for_each(|&pos| self.set_piece(pos, player.into()));
+        turned_pieces
     }
 }
 
@@ -443,5 +444,15 @@ mod tests {
         assert_eq!(moves_for_player2.next(), Some((4u8, 2u8).into()));
         assert_eq!(moves_for_player2.next(), Some((5u8, 3u8).into()));
         assert_eq!(moves_for_player2.next(), None);
+    }
+
+    #[test]
+    fn test_piece_placing() {
+        let mut board = Board::default();
+        let player1 = Player::Player1;
+        assert_eq!(board[(3u8, 3u8)], Disc::Player2);
+        let turned = board.place_piece((2u8, 3u8), player1);
+        assert_eq!(turned, vec![(3u8, 3u8).into()]);
+        assert_eq!(board[(3u8, 3u8)], Disc::Player1);
     }
 }
